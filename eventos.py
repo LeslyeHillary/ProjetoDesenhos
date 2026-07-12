@@ -6,7 +6,7 @@ from figuras import Retangulo
 
 
 class ControladorDesenho:
-    def _init_(self, canvas, obter_cor_borda, obter_cor_preenchimento):
+    def __init__(self, canvas, obter_cor_borda, obter_cor_preenchimento):
         self.canvas = canvas
         self.obter_cor_borda = obter_cor_borda
         self.obter_cor_preenchimento = obter_cor_preenchimento

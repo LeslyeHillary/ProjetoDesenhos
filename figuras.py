@@ -3,7 +3,7 @@ import math
 
 
 class Figura(ABC):
-    def _init_(self, x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento):
+    def __init__(self, x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento):
         self.x_inicial = x_inicial
         self.y_inicial = y_inicial
         self.x_final = x_final
@@ -85,8 +85,8 @@ class Circulo(Figura):
 
 
 class PoligonoRegular(Figura):
-    def _init_(self, x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento, lados=5):
-        super()._init_(x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
+    def __init__(self, x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento, lados=5):
+        super().__init__(x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
         self.lados = lados
 
     def _calcular_pontos(self):
@@ -113,8 +113,8 @@ class PoligonoRegular(Figura):
 
 
 class MaoLivre(Figura):
-    def _init_(self, x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento):
-        super()._init_(x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
+    def __init__(self, x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento):
+        super().__init__(x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
         self.pontos = [(x_inicial, y_inicial), (x_final, y_final)]
 
     def adicionar_ponto(self, x, y):
