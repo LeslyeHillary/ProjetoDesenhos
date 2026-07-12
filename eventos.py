@@ -1,115 +1,90 @@
-from desenho import desenhar_retangulo
-from desenho import desenhar_oval
-from desenho import desenhar_circulo
-import interface
-
-x_inicial = 0 #marca onde o desenho começa na coodernada x
-y_inicial = 0 #marca onde o desenho começa na coordernada y
-
-preview = None
-
-#executa quando o usuario clica
-def clique(evento):
-    global x_inicial
-    global y_inicial
-
-    x_inicial = evento.x
-    y_inicial = evento.y
+from figuras import Circulo
+from figuras import Oval
+from figuras import MaoLivre
+from figuras import PoligonoRegular
+from figuras import Retangulo
 
 
-def arrastar(evento):
-    global preview #permite modificar a variavel preview
+class ControladorDesenho:
+    def _init_(self, canvas, obter_cor_borda, obter_cor_preenchimento):
+        self.canvas = canvas
+        self.obter_cor_borda = obter_cor_borda
+        self.obter_cor_preenchimento = obter_cor_preenchimento
+        self.ferramenta = "retangulo"
+        self.x_inicial = 0
+        self.y_inicial = 0
+        self.preview = None
+        self.figura_mao_livre = None
 
-    if preview is not None:
-        interface.canvas.delete(preview)
+    def selecionar_ferramenta(self, ferramenta):
+        self.ferramenta = ferramenta
 
-    if interface.ferramenta == "retangulo": #verifica se foi selecionado a opção retangulo
-        #cria um retangulo temporario
-        preview = interface.canvas.create_rectangle(
-            x_inicial,
-            y_inicial,
-            evento.x,
-            evento.y,
-            outline=interface.cor_borda,
-            fill=interface.cor_preenchimento,
-            stipple="gray50", #deixa o preenchimento transparente
-            dash=(4, 2) #faz a borda ficar tracejada
-        ) 
+    def clique(self, evento):
+        self.x_inicial = evento.x
+        self.y_inicial = evento.y
 
-    elif interface.ferramenta == "oval": #caso a ferramenta seja oval
-        #cria um oval temporario
-        preview = interface.canvas.create_oval(
-            x_inicial,
-            y_inicial,
-            evento.x,
-            evento.y,
-            outline=interface.cor_borda,
-            fill=interface.cor_preenchimento,
-            stipple="gray50",
-            dash=(4, 2)
-        )
+        if self.ferramenta == "mao_livre":
+            cor_borda = self.obter_cor_borda()
+            cor_preenchimento = self.obter_cor_preenchimento()
+            self.figura_mao_livre = MaoLivre(
+                evento.x,
+                evento.y,
+                evento.x,
+                evento.y,
+                cor_borda,
+                cor_preenchimento,
+            )
+            self._limpar_previa()
 
-    elif interface.ferramenta == "circulo": #caso a ferramenta escolhida seja um circulo
-        raio = min(abs(evento.x - x_inicial), abs(evento.y - y_inicial)) #calcula o menor deslocamento
+    def arrastar(self, evento):
+        if self.ferramenta == "mao_livre":
+            if self.figura_mao_livre is None:
+                self.clique(evento)
 
-        if evento.x < x_inicial: #define posição dinal no eixo x
-            x_final = x_inicial - raio
-        else:
-            x_final = x_inicial + raio
+            self.figura_mao_livre.adicionar_ponto(evento.x, evento.y)
+            self._limpar_previa()
+            self.preview = self.figura_mao_livre.desenhar_previsualizacao(self.canvas)
+            return
 
-        if evento.y < y_inicial: #define posição final eixo y
-            y_final = y_inicial - raio
-        else:
-            y_final = y_inicial + raio
+        self._limpar_previa()
+        figura = self._criar_figura(evento.x, evento.y)
+        self.preview = figura.desenhar_previsualizacao(self.canvas)
 
-        preview = interface.canvas.create_oval(
-            x_inicial,
-            y_inicial,
-            x_final,
-            y_final,
-            outline=interface.cor_borda,
-            fill=interface.cor_preenchimento,
-            stipple="gray50",
-            dash=(4, 2)
-        )
+    def soltar(self, evento):
+        if self.ferramenta == "mao_livre":
+            if self.figura_mao_livre is not None:
+                self.figura_mao_livre.adicionar_ponto(evento.x, evento.y)
+                self._limpar_previa()
+                self.figura_mao_livre.desenhar(self.canvas)
+                self.figura_mao_livre = None
+            return
 
+        self._limpar_previa()
+        figura = self._criar_figura(evento.x, evento.y)
+        figura.desenhar(self.canvas)
 
-def soltar(evento): #executa quando o usario soltar o botao do mouse
-    global preview
+    def _limpar_previa(self):
+        if self.preview is not None:
+            self.canvas.delete(self.preview)
+            self.preview = None
 
-    if preview is not None:
-        interface.canvas.delete(preview)
-        preview = None
+    def _criar_figura(self, x_final, y_final):
+        cor_borda = self.obter_cor_borda()
+        cor_preenchimento = self.obter_cor_preenchimento()
 
-    if interface.ferramenta == "retangulo": #caso seja um retangulo
-        desenhar_retangulo(
-            interface.canvas,
-            x_inicial,
-            y_inicial,
-            evento.x,
-            evento.y,
-            interface.cor_borda,
-            interface.cor_preenchimento
-        )
+        if self.ferramenta == "retangulo":
+            return Retangulo(self.x_inicial, self.y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
 
-    elif interface.ferramenta == "oval": #caso seja um oval
-        desenhar_oval(
-            interface.canvas,
-            x_inicial,
-            y_inicial,
-            evento.x,
-            evento.y,
-            interface.cor_borda,
-            interface.cor_preenchimento
-        )
+        if self.ferramenta == "oval":
+            return Oval(self.x_inicial, self.y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
 
-    elif interface.ferramenta == "circulo": #caso seja um circulo
-        desenhar_circulo(
-            interface.canvas,
-            x_inicial,
-            y_inicial,
-            evento.x,
-            evento.y,
-            interface.cor_borda,
-            interface.cor_preenchimento
-        )
+        if self.ferramenta == "circulo":
+            return Circulo(self.x_inicial, self.y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
+
+        if self.ferramenta == "poligono":
+            return PoligonoRegular(self.x_inicial, self.y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
+
+        if self.ferramenta == "mao_livre":
+            return MaoLivre(self.x_inicial, self.y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
+
+        return Retangulo(self.x_inicial, self.y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
