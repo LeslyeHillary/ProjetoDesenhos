@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import math
 
 
+# Classe base para todas as formas de desenho
 class Figura(ABC):
     def _init_(self, x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento):
         self.x_inicial = x_inicial
@@ -34,6 +35,7 @@ class Figura(ABC):
         raise NotImplementedError
 
 
+# Desenha um retângulo no canvas
 class Retangulo(Figura):
     def _desenhar(self, canvas, previsualizacao=False):
         return canvas.create_rectangle(
@@ -45,6 +47,7 @@ class Retangulo(Figura):
         )
 
 
+# Desenha um oval no canvas
 class Oval(Figura):
     def _desenhar(self, canvas, previsualizacao=False):
         return canvas.create_oval(
@@ -56,6 +59,7 @@ class Oval(Figura):
         )
 
 
+# Desenha um círculo com tamanho igual nos dois eixos
 class Circulo(Figura):
     def _coordenadas_ajustadas(self):
         lado = min(abs(self.x_final - self.x_inicial), abs(self.y_final - self.y_inicial))
@@ -84,6 +88,7 @@ class Circulo(Figura):
         )
 
 
+# Cria um polígono com lados iguais
 class PoligonoRegular(Figura):
     def _init_(self, x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento, lados=5):
         super()._init_(x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
@@ -112,6 +117,7 @@ class PoligonoRegular(Figura):
         )
 
 
+# Permite desenhar uma linha livre pelo canvas
 class MaoLivre(Figura):
     def _init_(self, x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento):
         super()._init_(x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
