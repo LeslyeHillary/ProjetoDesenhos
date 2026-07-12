@@ -5,6 +5,7 @@ from figuras import PoligonoRegular
 from figuras import Retangulo
 
 
+# Controla as ações de desenho no canvas
 class ControladorDesenho:
     def __init__(self, canvas, obter_cor_borda, obter_cor_preenchimento):
         self.canvas = canvas
@@ -19,6 +20,7 @@ class ControladorDesenho:
     def selecionar_ferramenta(self, ferramenta):
         self.ferramenta = ferramenta
 
+    # Guarda o ponto inicial quando o usuário clica
     def clique(self, evento):
         self.x_inicial = evento.x
         self.y_inicial = evento.y
@@ -36,6 +38,7 @@ class ControladorDesenho:
             )
             self._limpar_previa()
 
+    # Mostra a forma em tempo real enquanto o mouse é arrastado
     def arrastar(self, evento):
         if self.ferramenta == "mao_livre":
             if self.figura_mao_livre is None:
@@ -50,6 +53,7 @@ class ControladorDesenho:
         figura = self._criar_figura(evento.x, evento.y)
         self.preview = figura.desenhar_previsualizacao(self.canvas)
 
+    # Finaliza o desenho quando o usuário solta o mouse
     def soltar(self, evento):
         if self.ferramenta == "mao_livre":
             if self.figura_mao_livre is not None:
@@ -63,11 +67,13 @@ class ControladorDesenho:
         figura = self._criar_figura(evento.x, evento.y)
         figura.desenhar(self.canvas)
 
+    # Remove a pré-visualização antiga antes de desenhar outra
     def _limpar_previa(self):
         if self.preview is not None:
             self.canvas.delete(self.preview)
             self.preview = None
 
+    # Cria a figura correta de acordo com a ferramenta escolhida
     def _criar_figura(self, x_final, y_final):
         cor_borda = self.obter_cor_borda()
         cor_preenchimento = self.obter_cor_preenchimento()
