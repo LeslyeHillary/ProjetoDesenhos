@@ -48,6 +48,21 @@ def selecionar_mao_livre():
         controlador.selecionar_ferramenta(ferramenta)
 
 
+def selecionar_linha():
+    global ferramenta
+    ferramenta = "linha"
+    if controlador is not None:
+        controlador.selecionar_ferramenta(ferramenta)
+
+
+def selecionar_rabisco():
+    global ferramenta
+    ferramenta = "rabisco"
+    if controlador is not None:
+        controlador.selecionar_ferramenta(ferramenta)
+
+
+
 def mudar_borda():
     global cor_borda
     cor_borda = escolher_cor_borda()
@@ -89,6 +104,10 @@ def iniciar():
     tk.Button(barra, text="Polígono", command=selecionar_poligono).pack(side="left")
 
     tk.Button(barra, text="Mão livre", command=selecionar_mao_livre).pack(side="left")
+
+    tk.Button(barra, text="Linha", command=selecionar_linha).pack(side="left")
+
+    tk.Button(barra, text="Rabisco", command=selecionar_rabisco).pack(side="left")
 
     tk.Button(barra, text="Cor da borda", command=mudar_borda).pack(side="left")
 
