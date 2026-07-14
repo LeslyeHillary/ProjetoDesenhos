@@ -8,6 +8,7 @@ from figuras import Rabisco
 
 
 
+# Controla as ações de desenho no canvas
 class ControladorDesenho:
     def __init__(self, canvas, obter_cor_borda, obter_cor_preenchimento):
         self.canvas = canvas
@@ -23,6 +24,7 @@ class ControladorDesenho:
     def selecionar_ferramenta(self, ferramenta):
         self.ferramenta = ferramenta
 
+    # Guarda o ponto inicial quando o usuário clica
     def clique(self, evento):
         self.x_inicial = evento.x
         self.y_inicial = evento.y
@@ -91,6 +93,7 @@ class ControladorDesenho:
         else:
             figura.desenhar(self.canvas)
 
+    # Remove a pré-visualização antiga antes de desenhar outra
     def _limpar_previa(self):
         # Remove a figura temporária da tela
         if self.preview is not None:
