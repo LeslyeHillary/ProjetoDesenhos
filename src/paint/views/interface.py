@@ -1,131 +1,117 @@
 import tkinter as tk
 
-from eventos import ControladorDesenho
-from cores import escolher_cor_borda, escolher_cor_preenchimento
-
-janela = None
-canvas = None
-controlador = None
-
-ferramenta = "retangulo"
-
-cor_borda = "black"
-cor_preenchimento = "white"
+# Ajuste o import abaixo se a sua pasta física for "controler" (com um 'l' só)
+from controler.controlador import ControladorDesenho
+from models.cores import escolher_cor_borda, escolher_cor_preenchimento
+from models.desenho import Desenho
 
 
-def selecionar_retangulo():
-    global ferramenta
-    ferramenta = "retangulo"
-    if controlador is not None:
-        controlador.selecionar_ferramenta(ferramenta)
+class InterfaceGrafica:
+    def __init__(self):  # CORRIGIDO: __init__ com dois underlines de cada lado
+        self.janela = tk.Tk()
+        self.janela.title("Paint MVC")
 
+        largura = 900
+        altura = 600
+        largura_tela = self.janela.winfo_screenwidth()
+        altura_tela = self.janela.winfo_screenheight()
+        pos_x = (largura_tela - largura) // 2
+        pos_y = (altura_tela - altura) // 2
+        self.janela.geometry(f"{largura}x{altura}+{pos_x}+{pos_y}")
 
-def selecionar_oval():
-    global ferramenta
-    ferramenta = "oval"
-    if controlador is not None:
-        controlador.selecionar_ferramenta(ferramenta)
+        self.desenho = Desenho()
+        self.ferramenta = "retangulo"
+        self.cor_borda = "black"
+        self.cor_preenchimento = "white"
+        self.canvas = None
+        self.controlador = None
 
+    def criar_widgets(self):
+        barra = tk.Frame(self.janela)
+        barra.pack(fill="x")
 
-def selecionar_circulo():
-    global ferramenta
-    ferramenta = "circulo"
-    if controlador is not None:
-        controlador.selecionar_ferramenta(ferramenta)
+        estilo_botao = {
+            "bg": "#da69ff",
+            "fg": "white",
+            "activebackground": "#9955bb",
+            "activeforeground": "black",
+            "highlightthickness": 2,
+            "highlightbackground": "white",
+            "highlightcolor": "white",
+            "bd": 2,
+            "relief": "ridge",
+        }
 
+        tk.Button(barra, text="Retângulo", command=self.selecionar_retangulo, **estilo_botao).pack(side="left")
+        tk.Button(barra, text="Oval", command=self.selecionar_oval, **estilo_botao).pack(side="left")
+        tk.Button(barra, text="Círculo", command=self.selecionar_circulo, **estilo_botao).pack(side="left")
+        tk.Button(barra, text="Polígono", command=self.selecionar_poligono, **estilo_botao).pack(side="left")
+        tk.Button(barra, text="Mão livre", command=self.selecionar_mao_livre, **estilo_botao).pack(side="left")
+        tk.Button(barra, text="Linha", command=self.selecionar_linha, **estilo_botao).pack(side="left")
+        tk.Button(barra, text="Rabisco", command=self.selecionar_rabisco, **estilo_botao).pack(side="left")
+        tk.Button(barra, text="Cor da borda", command=self.mudar_borda, **estilo_botao).pack(side="left")
+        tk.Button(barra, text="Cor preenchimento", command=self.mudar_preenchimento, **estilo_botao).pack(side="left")
 
-def selecionar_poligono():
-    global ferramenta
-    ferramenta = "poligono"
-    if controlador is not None:
-        controlador.selecionar_ferramenta(ferramenta)
+        self.canvas = tk.Canvas(self.janela, bg="white")
+        self.canvas.pack(fill="both", expand=True)
 
+        self.controlador = ControladorDesenho(
+            self.canvas,
+            self.desenho,
+            lambda: self.cor_borda,
+            lambda: self.cor_preenchimento,
+        )
+        self.controlador.selecionar_ferramenta(self.ferramenta)
 
-def selecionar_mao_livre():
-    global ferramenta
-    ferramenta = "mao_livre"
-    if controlador is not None:
-        controlador.selecionar_ferramenta(ferramenta)
+        self.canvas.bind("<Button-1>", self.controlador.clique)
+        self.canvas.bind("<B1-Motion>", self.controlador.arrastar)
+        self.canvas.bind("<ButtonRelease-1>", self.controlador.soltar)
 
+    def selecionar_retangulo(self):
+        self.ferramenta = "retangulo"
+        if self.controlador is not None:
+            self.controlador.selecionar_ferramenta(self.ferramenta)
 
-def selecionar_linha():
-    global ferramenta
-    ferramenta = "linha"
-    if controlador is not None:
-        controlador.selecionar_ferramenta(ferramenta)
+    def selecionar_oval(self):
+        self.ferramenta = "oval"
+        if self.controlador is not None:
+            self.controlador.selecionar_ferramenta(self.ferramenta)
 
+    def selecionar_circulo(self):
+        self.ferramenta = "circulo"
+        if self.controlador is not None:
+            self.controlador.selecionar_ferramenta(self.ferramenta)
 
-def selecionar_rabisco():
-    global ferramenta
-    ferramenta = "rabisco"
-    if controlador is not None:
-        controlador.selecionar_ferramenta(ferramenta)
+    def selecionar_poligono(self):
+        self.ferramenta = "poligono"
+        if self.controlador is not None:
+            self.controlador.selecionar_ferramenta(self.ferramenta)
 
+    def selecionar_mao_livre(self):
+        self.ferramenta = "mao_livre"
+        if self.controlador is not None:
+            self.controlador.selecionar_ferramenta(self.ferramenta)
 
+    def selecionar_linha(self):
+        self.ferramenta = "linha"
+        if self.controlador is not None:
+            self.controlador.selecionar_ferramenta(self.ferramenta)
 
-def mudar_borda():
-    global cor_borda
-    cor_borda = escolher_cor_borda()
+    def selecionar_rabisco(self):
+        self.ferramenta = "rabisco"
+        if self.controlador is not None:
+            self.controlador.selecionar_ferramenta(self.ferramenta)
 
+    def mudar_borda(self):
+        self.cor_borda = escolher_cor_borda()
 
-def mudar_preenchimento():
-    global cor_preenchimento
-    cor_preenchimento = escolher_cor_preenchimento()
+    def mudar_preenchimento(self):
+        self.cor_preenchimento = escolher_cor_preenchimento()
+
+    def executar(self):
+        self.criar_widgets()
+        self.janela.mainloop()
 
 
 def iniciar():
-    global janela
-    global canvas
-    global controlador
-
-    janela = tk.Tk()
-    janela.title("Paint Orientado a Objeto")
-
-    largura = 900
-    altura = 600
-    # Centraliza a janela na tela.
-    largura_tela = janela.winfo_screenwidth()
-    altura_tela = janela.winfo_screenheight()
-    pos_x = (largura_tela - largura) // 2
-    pos_y = (altura_tela - altura) // 2
-    janela.geometry(f"{largura}x{altura}+{pos_x}+{pos_y}")
-
-    barra = tk.Frame(janela)
-    barra.pack(fill="x")
-
- 
-    
-    tk.Button(barra, text="Retângulo", command=selecionar_retangulo).pack(side="left")
-
-    tk.Button(barra, text="Oval", command=selecionar_oval).pack(side="left")
-
-    tk.Button(barra, text="Círculo", command=selecionar_circulo, ).pack(side="left")
-
-    tk.Button(barra, text="Polígono", command=selecionar_poligono).pack(side="left")
-
-    tk.Button(barra, text="Mão livre", command=selecionar_mao_livre).pack(side="left")
-
-    tk.Button(barra, text="Linha", command=selecionar_linha).pack(side="left")
-
-    tk.Button(barra, text="Rabisco", command=selecionar_rabisco).pack(side="left")
-
-    tk.Button(barra, text="Cor da borda", command=mudar_borda).pack(side="left")
-
-    tk.Button(barra, text="Cor preenchimento", command=mudar_preenchimento).pack(side="left")
-
-    canvas = tk.Canvas(janela, bg="white")
-    canvas.pack(fill="both", expand=True)
-
-    controlador = ControladorDesenho(
-        canvas,
-        lambda: cor_borda,
-        lambda: cor_preenchimento,
-    )
-    controlador.selecionar_ferramenta(ferramenta)
-
-    # Liga os eventos do mouse para desenhar no canvas.
-    canvas.bind("<Button-1>", controlador.clique)
-    canvas.bind("<B1-Motion>", controlador.arrastar)
-    canvas.bind("<ButtonRelease-1>", controlador.soltar)
-
-    janela.mainloop()
+    InterfaceGrafica().executar()
