@@ -1,10 +1,10 @@
-from figuras import Circulo
-from figuras import Oval
-from figuras import MaoLivre
-from figuras import PoligonoRegular
-from figuras import Retangulo
-from figuras import Linha
-from figuras import Rabisco
+from models.figuras import Circulo
+from models.figuras import Oval
+from models.figuras import MaoLivre
+from models.figuras import PoligonoRegular
+from models.figuras import Retangulo
+from models.figuras import Linha
+from models.figuras import Rabisco
 
 
 

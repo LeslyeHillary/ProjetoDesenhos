@@ -12,14 +12,27 @@ Desenvolver um programa gráfico capaz de criar diferentes formas em uma área d
 * Tkinter
 * Git e GitHub para controle de versões e desenvolvimento colaborativo
 
-## Estrutura atual do projeto
+## Estrutura do Projeto
 
-* **main.py:** arquivo responsável por iniciar a aplicação.
-* **interface.py:** cria a janela principal, a barra de ferramentas, o canvas e conecta o controlador responsável pelos desenhos.
-* **eventos.py:** reúne o controlador orientado a objetos que gerencia os eventos de clique, arraste e liberação do mouse.
-* **figuras.py:** contém a classe base **Figura** e suas subclasses para retângulo, oval, círculo, polígono e desenho à mão livre.
-* **desenho.py:** mantém as funções da versão anterior do sistema para fins de histórico.
-* **cores.py:** realiza a escolha das cores da borda e do preenchimento utilizando a paleta padrão do sistema.
+A aplicação adota o padrão **MVC (Model-View-Controller)** para separar responsabilidades e organizar a lógica do sistema em três camadas principais:
+
+### models/ (Modelo)
+Camada responsável pelas regras de negócio, estruturas de dados e representação dos elementos do sistema.
+
+* **figuras.py:** Define a modelagem e o comportamento das figuras geométricas (Retângulo, Oval, Círculo, Linha, Rabisco, etc.).
+* **desenho.py:** Gerencia o estado e o conjunto de desenhos armazenados no canvas.
+* **cores.py:** Controla as definições e a aplicação das cores de borda e preenchimento das figuras.
+
+### views/ (Visualização)
+Camada encarregada de toda a interface gráfica e da apresentação visual para o usuário.
+
+* **interface.py:** Renderiza a janela principal, organiza os componentes visuais e configura a área de desenho (canvas).
+
+### controler/ (Controlador)
+Camada intermediária que gerencia o fluxo de informações, capturando as ações do usuário na View e aplicando-as ao Model.
+
+* **eventos.py:** Trata os eventos físicos do mouse (cliques e arrastes) para viabilizar as ações de desenho.
+* **controlador.py:** Centraliza a lógica das ferramentas ativas e coordena a comunicação direta entre a View e o Model.
 
 ## Entrega 1 - imperativa.1
 
@@ -66,16 +79,17 @@ Organização obtida:
 * A interface ficou encarregada de montar a janela e encaminhar as ações ao controlador.
 * O processo de desenho deixou de depender de diversas estruturas condicionais distribuídas pelo código.
 
-## Entrega 3 - OO.MVC.1 (visão geral)
+## Entrega 3 - OO.MVC.1 
 
 Nesta fase, o objetivo principal foi reorganizar a aplicação utilizando o padrão de arquitetura MVC.
 
-Planejamento geral:
+Organização obtida:
 
-* Criar classes de modelo responsáveis pelos dados e pelas figuras.
-* Implementar a camada de visão encarregada da interface gráfica.
-* Desenvolver controladores para administrar a lógica de interação.
-* Reorganizar a estrutura do projeto, definindo melhor as responsabilidades de cada componente.
+* Criação classes de modelo responsáveis pelos dados e pelas figuras.
+* Implementação da camada de visão encarregada da interface gráfica.
+* Desenvolvimento de controladores para administrar a lógica de interação.
+* Reorganização a estrutura do projeto, definindo melhor as responsabilidades de cada componente.
+* Adição das funcionalidades de linha e rabisco.
 
 ## Entrega 4 - OO.State.1 (planejada)
 
