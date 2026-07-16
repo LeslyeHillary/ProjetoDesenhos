@@ -1,3 +1,4 @@
+# Importa todas as classes de figuras utilizadas pelo controlador
 from models.figuras import (
     Circulo,
     Linha,
@@ -8,13 +9,17 @@ from models.figuras import (
     Retangulo,
 )
 
-class ControladorDesenho:
+class ControladorDesenho: #Classe responsável por controlar toda a lógica de desenho da aplicação, recebe os eventos do mouse, cria as figuras e atualiza o modelo e a interface.
     def __init__(self, desenho, obter_cor_borda, obter_cor_preenchimento, atualizar_tela):
-        self.desenho = desenho
+        self.desenho = desenho  # Modelo onde as figuras serão armazenadas
+        
+		 # Funções que retornam as cores atualmente selecionadas
         self.obter_cor_borda = obter_cor_borda
         self.obter_cor_preenchimento = obter_cor_preenchimento
-        self.atualizar_tela = atualizar_tela  
-        self.ferramenta = "retangulo"
+        
+
+        self.atualizar_tela = atualizar_tela   # Função utilizada para redesenhar a tela
+        self.ferramenta = "retangulo"  #Ferramenta selecionada inicialmente
 
         self.x_inicial = 0
         self.y_inicial = 0
@@ -24,23 +29,25 @@ class ControladorDesenho:
         self.figura_poligono = None  
         self.ultima_linha = None
 
-    def selecionar_ferramenta(self, ferramenta):
+    def selecionar_ferramenta(self, ferramenta): # Altera a ferramenta atualmente selecionada, caso um polígono esteja sendo criado, ele é finalizado.
         if self.ferramenta == "poligono" and ferramenta != "poligono" and self.figura_poligono is not None:
             self.finalizar_poligono()
         self.ferramenta = ferramenta
 
-    def clique(self, evento):
-        if self.ferramenta != "poligono" and self.figura_poligono is not None:
+    def clique(self, evento): #Executado quando o botão esquerdo do mouse é pressionado.
+
+
+        if self.ferramenta != "poligono" and self.figura_poligono is not None: # Finaliza um polígono caso outra ferramenta seja utilizada
             self.finalizar_poligono()
 
         self.x_inicial = evento.x
         self.y_inicial = evento.y
 
-        if self.ferramenta == "poligono":
+        if self.ferramenta == "poligono": # Tratamento específico para polígonos
             self._lidar_clique_poligono(evento)
             return
             
-        if self.ferramenta not in ("mao_livre", "rabisco"):
+        if self.ferramenta not in ("mao_livre", "rabisco"): # Tratamento específico para mao livre e rabisco
             self.figura_temporaria = self._criar_figura(evento.x, evento.y)
             self.atualizar_tela()
             return
@@ -56,7 +63,8 @@ class ControladorDesenho:
         self.figura_temporaria = self.figura_mao_livre
         self.atualizar_tela()
 
-    def _lidar_clique_poligono(self, evento):
+    def _lidar_clique_poligono(self, evento): #Adiciona um novo vértice ao polígono.
+
         cor_borda = self.obter_cor_borda()
         cor_preenchimento = self.obter_cor_preenchimento()
 
@@ -71,12 +79,12 @@ class ControladorDesenho:
         self.figura_temporaria = self.figura_poligono
         self.atualizar_tela()
 
-    def movimentar(self, evento):
+    def movimentar(self, evento): #Atualiza a pré-visualização do último lado do polígono enquanto o mouse é movimentado.
         if self.ferramenta == "poligono" and self.figura_poligono is not None:
             self.figura_poligono.pontos[-1] = (evento.x, evento.y)
             self.atualizar_tela()
 
-    def arrastar(self, evento):
+    def arrastar(self, evento): # Executado enquanto o mouse é arrastado.
         if self.ferramenta == "poligono":
             return 
 
@@ -91,7 +99,7 @@ class ControladorDesenho:
         self.figura_temporaria = self._criar_figura(evento.x, evento.y)
         self.atualizar_tela()
 
-    def soltar(self, evento):
+    def soltar(self, evento): #Executado quando o botão do mouse é liberado.
         if self.ferramenta == "poligono":
             return  
 
@@ -117,11 +125,11 @@ class ControladorDesenho:
         self.figura_temporaria = None
         self.atualizar_tela()
 
-    def duplo_clique(self, evento):
+    def duplo_clique(self, evento):  #Finaliza o polígono quando ocorre um duplo clique
         if self.ferramenta == "poligono" and self.figura_poligono is not None:
             self.finalizar_poligono()
 
-    def finalizar_poligono(self):
+    def finalizar_poligono(self): #Finaliza a construção do polígono e o adiciona ao desenho.
         if self.figura_poligono is None:
             return
 
@@ -141,7 +149,7 @@ class ControladorDesenho:
         self.figura_temporaria = None
         self.atualizar_tela()
 
-    def _criar_figura(self, x_final, y_final):
+    def _criar_figura(self, x_final, y_final): # Cria uma figura de acordo com a ferramenta selecionada.
         cor_borda = self.obter_cor_borda()
         cor_preenchimento = self.obter_cor_preenchimento()
 
@@ -155,6 +163,7 @@ class ControladorDesenho:
         if self.ferramenta == "poligono":
             return Poligono(cor_borda, cor_preenchimento)
 
+		# Relaciona o nome da ferramenta à sua classe
         figura = figuras.get(self.ferramenta, Retangulo)
 
         return figura(
