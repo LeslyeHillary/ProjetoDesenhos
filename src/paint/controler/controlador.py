@@ -1,133 +1,167 @@
-from models.figuras import Circulo
-from models.figuras import Linha
-from models.figuras import MaoLivre
-from models.figuras import Oval
-from models.figuras import PoligonoRegular
-from models.figuras import Rabisco
-from models.figuras import Retangulo
-
+from models.figuras import (
+    Circulo,
+    Linha,
+    MaoLivre,
+    Oval,
+    Poligono,
+    Rabisco,
+    Retangulo,
+)
 
 class ControladorDesenho:
-	def __init__(self, canvas, desenho, obter_cor_borda, obter_cor_preenchimento):
-		self.canvas = canvas
-		self.desenho = desenho
-		self.obter_cor_borda = obter_cor_borda
-		self.obter_cor_preenchimento = obter_cor_preenchimento
+    def __init__(self, desenho, obter_cor_borda, obter_cor_preenchimento, atualizar_tela):
+        self.desenho = desenho
+        self.obter_cor_borda = obter_cor_borda
+        self.obter_cor_preenchimento = obter_cor_preenchimento
+        self.atualizar_tela = atualizar_tela  
+        self.ferramenta = "retangulo"
 
-		self.ferramenta = "retangulo"
-		self.x_inicial = 0
-		self.y_inicial = 0
-		self.preview = None
-		self.figura_mao_livre = None
-		self.ultima_linha = None
+        self.x_inicial = 0
+        self.y_inicial = 0
 
-	def selecionar_ferramenta(self, ferramenta):
-		self.ferramenta = ferramenta
+        self.figura_temporaria = None 
+        self.figura_mao_livre = None
+        self.figura_poligono = None  
+        self.ultima_linha = None
 
-	def clique(self, evento):
-		self.x_inicial = evento.x
-		self.y_inicial = evento.y
+    def selecionar_ferramenta(self, ferramenta):
+        if self.ferramenta == "poligono" and ferramenta != "poligono" and self.figura_poligono is not None:
+            self.finalizar_poligono()
+        self.ferramenta = ferramenta
 
-		if self.ferramenta in ("mao_livre", "rabisco"):
-			cor_borda = self.obter_cor_borda()
-			cor_preenchimento = self.obter_cor_preenchimento()
+    def clique(self, evento):
+        if self.ferramenta != "poligono" and self.figura_poligono is not None:
+            self.finalizar_poligono()
 
-			classe = MaoLivre if self.ferramenta == "mao_livre" else Rabisco
-			self.figura_mao_livre = classe(
-				evento.x,
-				evento.y,
-				evento.x,
-				evento.y,
-				cor_borda,
-				cor_preenchimento,
-			)
+        self.x_inicial = evento.x
+        self.y_inicial = evento.y
 
-			self._limpar_previa()
+        if self.ferramenta == "poligono":
+            self._lidar_clique_poligono(evento)
+            return
+            
+        if self.ferramenta not in ("mao_livre", "rabisco"):
+            self.figura_temporaria = self._criar_figura(evento.x, evento.y)
+            self.atualizar_tela()
+            return
 
-	def arrastar(self, evento):
-		if self.ferramenta in ("mao_livre", "rabisco"):
-			if self.figura_mao_livre is None:
-				self.clique(evento)
+        cor_borda = self.obter_cor_borda()
+        cor_preenchimento = self.obter_cor_preenchimento()
 
-			self.figura_mao_livre.adicionar_ponto(evento.x, evento.y)
-			self._limpar_previa()
-			self.preview = self.figura_mao_livre.desenhar_previsualizacao(self.canvas)
-			return
+        figura = MaoLivre if self.ferramenta == "mao_livre" else Rabisco
 
-		self._limpar_previa()
-		figura = self._criar_figura(evento.x, evento.y)
-		self.preview = figura.desenhar_previsualizacao(self.canvas)
+        self.figura_mao_livre = figura(
+            evento.x, evento.y, evento.x, evento.y, cor_borda, cor_preenchimento
+        )
+        self.figura_temporaria = self.figura_mao_livre
+        self.atualizar_tela()
 
-	def soltar(self, evento):
-		if self.ferramenta in ("mao_livre", "rabisco"):
-			if self.figura_mao_livre is not None:
-				self.figura_mao_livre.adicionar_ponto(evento.x, evento.y)
-				self._limpar_previa()
-				self.desenho.adicionar_figura(self.figura_mao_livre)
-				self.figura_mao_livre = None
-				self._redesenhar_tudo()
-			return
+    def _lidar_clique_poligono(self, evento):
+        cor_borda = self.obter_cor_borda()
+        cor_preenchimento = self.obter_cor_preenchimento()
 
-		self._limpar_previa()
-		figura = self._criar_figura(evento.x, evento.y)
+        if self.figura_poligono is None:
+            self.figura_poligono = Poligono(cor_borda, cor_preenchimento)
+            self.figura_poligono.adicionar_ponto(evento.x, evento.y)
+            self.figura_poligono.adicionar_ponto(evento.x, evento.y)
+        else:
+            self.figura_poligono.pontos[-1] = (evento.x, evento.y)
+            self.figura_poligono.adicionar_ponto(evento.x, evento.y)
 
-		if self.ferramenta == "linha":
-			if self.ultima_linha is not None:
-				self.desenho.remover_figura(self.ultima_linha)
+        self.figura_temporaria = self.figura_poligono
+        self.atualizar_tela()
 
-			self.ultima_linha = figura
-			self.desenho.adicionar_figura(figura)
-			self._redesenhar_tudo()
-			return
+    def movimentar(self, evento):
+        if self.ferramenta == "poligono" and self.figura_poligono is not None:
+            self.figura_poligono.pontos[-1] = (evento.x, evento.y)
+            self.atualizar_tela()
 
-		self.desenho.adicionar_figura(figura)
-		self._redesenhar_tudo()
+    def arrastar(self, evento):
+        if self.ferramenta == "poligono":
+            return 
 
-	def _limpar_previa(self):
-		if self.preview is not None:
-			self.canvas.delete(self.preview)
-			self.preview = None
+        if self.ferramenta in ("mao_livre", "rabisco"):
+            if self.figura_mao_livre is None:
+                self.clique(evento)
 
-	def _redesenhar_tudo(self):
-		self.canvas.delete("all")
-		self.desenho.desenhar(self.canvas)
+            self.figura_mao_livre.adicionar_ponto(evento.x, evento.y)
+            self.atualizar_tela()
+            return
 
-	def _criar_figura(self, x_final, y_final):
-		cor_borda = self.obter_cor_borda()
-		cor_preenchimento = self.obter_cor_preenchimento()
+        self.figura_temporaria = self._criar_figura(evento.x, evento.y)
+        self.atualizar_tela()
 
-		if self.ferramenta == "retangulo":
-			return Retangulo(self.x_inicial, self.y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
+    def soltar(self, evento):
+        if self.ferramenta == "poligono":
+            return  
 
-		if self.ferramenta == "oval":
-			return Oval(self.x_inicial, self.y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
+        if self.ferramenta in ("mao_livre", "rabisco"):
+            if self.figura_mao_livre is None:
+                return
 
-		if self.ferramenta == "circulo":
-			return Circulo(self.x_inicial, self.y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
+            self.figura_mao_livre.adicionar_ponto(evento.x, evento.y)
+            self.desenho.adicionar_figura(self.figura_mao_livre)
+            self.figura_mao_livre = None
+            self.figura_temporaria = None
+            self.atualizar_tela()
+            return
 
-		if self.ferramenta == "poligono":
-			return PoligonoRegular(self.x_inicial, self.y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
+        figura = self._criar_figura(evento.x, evento.y)
 
-		if self.ferramenta in ("mao_livre", "rabisco"):
-			classe = MaoLivre if self.ferramenta == "mao_livre" else Rabisco
+        if self.ferramenta == "linha":
+            if self.ultima_linha is not None:
+                self.desenho.remover_figura(self.ultima_linha)
+            self.ultima_linha = figura
 
-			return classe(
-				self.x_inicial,
-				self.y_inicial,
-				x_final,
-				y_final,
-				cor_borda,
-				cor_preenchimento,
-			)
+        self.desenho.adicionar_figura(figura)
+        self.figura_temporaria = None
+        self.atualizar_tela()
 
-		if self.ferramenta == "linha":
-			return Linha(
-				self.x_inicial,
-				self.y_inicial,
-				x_final,
-				y_final,
-				cor_borda,
-				cor_preenchimento,
-			)
+    def duplo_clique(self, evento):
+        if self.ferramenta == "poligono" and self.figura_poligono is not None:
+            self.finalizar_poligono()
 
-		return Retangulo(self.x_inicial, self.y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
+    def finalizar_poligono(self):
+        if self.figura_poligono is None:
+            return
+
+        if len(self.figura_poligono.pontos) > 0:
+            self.figura_poligono.pontos.pop()
+
+        pontos_limpos = []
+        for pt in self.figura_poligono.pontos:
+            if not pontos_limpos or pontos_limpos[-1] != pt:
+                pontos_limpos.append(pt)
+        self.figura_poligono.pontos = pontos_limpos
+
+        if len(self.figura_poligono.pontos) >= 3:
+            self.desenho.adicionar_figura(self.figura_poligono)
+
+        self.figura_poligono = None
+        self.figura_temporaria = None
+        self.atualizar_tela()
+
+    def _criar_figura(self, x_final, y_final):
+        cor_borda = self.obter_cor_borda()
+        cor_preenchimento = self.obter_cor_preenchimento()
+
+        figuras = {
+            "retangulo": Retangulo,
+            "oval": Oval,
+            "circulo": Circulo,
+            "linha": Linha,
+        }
+
+        if self.ferramenta == "poligono":
+            return Poligono(cor_borda, cor_preenchimento)
+
+        figura = figuras.get(self.ferramenta, Retangulo)
+
+        return figura(
+            self.x_inicial,
+            self.y_inicial,
+            x_final,
+            y_final,
+            cor_borda,
+            cor_preenchimento,
+        )
