@@ -1,8 +1,5 @@
-from abc import ABC, abstractmethod
-import math
+from abc import ABC
 
-
-# Classe base para todas as formas de desenho
 class Figura(ABC):
     def __init__(self, x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento):
         self.x_inicial = x_inicial
@@ -12,170 +9,64 @@ class Figura(ABC):
         self.cor_borda = cor_borda
         self.cor_preenchimento = cor_preenchimento
 
-    def _opcoes_desenho(self, previsualizacao=False):
-        opcoes = {
-            "outline": self.cor_borda,
-            "fill": self.cor_preenchimento,
-        }
-
-        if previsualizacao:
-            opcoes["stipple"] = "gray50"
-            opcoes["dash"] = (4, 2)
-
-        return opcoes
-
-    def desenhar(self, canvas):
-        return self._desenhar(canvas, previsualizacao=False)
-
-    def desenhar_previsualizacao(self, canvas):
-        return self._desenhar(canvas, previsualizacao=True)
-
-    @abstractmethod
-    def _desenhar(self, canvas, previsualizacao=False):
-        raise NotImplementedError
-
-
-# Desenha um retângulo no canvas
 class Retangulo(Figura):
-    def _desenhar(self, canvas, previsualizacao=False):
-        return canvas.create_rectangle(
-            self.x_inicial,
-            self.y_inicial,
-            self.x_final,
-            self.y_final,
-            **self._opcoes_desenho(previsualizacao),
-        )
+    pass
 
-
-# Desenha um oval no canvas
 class Oval(Figura):
-    def _desenhar(self, canvas, previsualizacao=False):
-        return canvas.create_oval(
-            self.x_inicial,
-            self.y_inicial,
-            self.x_final,
-            self.y_final,
-            **self._opcoes_desenho(previsualizacao),
-        )
+    pass
 
-
-# Desenha um círculo com tamanho igual nos dois eixos
 class Circulo(Figura):
-    def _coordenadas_ajustadas(self):
-        lado = min(abs(self.x_final - self.x_inicial), abs(self.y_final - self.y_inicial))
+      def coordenadas_ajustadas(self):
+            lado = min(abs(self.x_final - self.x_inicial), abs(self.y_final - self.y_inicial))
 
-        if self.x_final < self.x_inicial:
-            x_final = self.x_inicial - lado
-        else:
-            x_final = self.x_inicial + lado
+            if self.x_final < self.x_inicial:
+                  x_final = self.x_inicial - lado
+            else:
+                  x_final = self.x_inicial + lado
 
-        if self.y_final < self.y_inicial:
-            y_final = self.y_inicial - lado
-        else:
-            y_final = self.y_inicial + lado
+            if self.y_final < self.y_inicial:
+                  y_final = self.y_inicial - lado
+            else:
+                  y_final = self.y_inicial + lado
 
-        return self.x_inicial, self.y_inicial, x_final, y_final
+            return self.x_inicial, self.y_inicial, x_final, y_final
 
-    def _desenhar(self, canvas, previsualizacao=False):
-        x_inicial, y_inicial, x_final, y_final = self._coordenadas_ajustadas()
-
-        return canvas.create_oval(
-            x_inicial,
-            y_inicial,
-            x_final,
-            y_final,
-            **self._opcoes_desenho(previsualizacao),
-        )
-
-
-# Cria um polígono com lados iguais
-class PoligonoRegular(Figura):
-    def __init__(self, x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento, lados=5):
-        super().__init__(x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
-        self.lados = lados
-
-    def _calcular_pontos(self):
-        centro_x = (self.x_inicial + self.x_final) / 2
-        centro_y = (self.y_inicial + self.y_final) / 2
-        raio = min(abs(self.x_final - self.x_inicial), abs(self.y_final - self.y_inicial)) / 2
-        angulo_inicial = -math.pi / 2
-
-        pontos = []
-        for indice in range(self.lados):
-            angulo = angulo_inicial + (2 * math.pi * indice / self.lados)
-            pontos.extend([
-                round(centro_x + raio * math.cos(angulo)),
-                round(centro_y + raio * math.sin(angulo)),
-            ])
-
-        return pontos
-
-    def _desenhar(self, canvas, previsualizacao=False):
-        return canvas.create_polygon(
-            *self._calcular_pontos(),
-            **self._opcoes_desenho(previsualizacao),
-        )
-
-
-# Permite desenhar uma linha livre pelo canvas
 class MaoLivre(Figura):
-    def __init__(self, x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento):
-        super().__init__(x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
-        self.pontos = [(x_inicial, y_inicial), (x_final, y_final)]
+    def __init__(
+        self, x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento, iniciar_lista=True):
+        super().__init__(
+            x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
+
+        if iniciar_lista:
+            self.pontos = [
+                (x_inicial, y_inicial),
+                (x_final, y_final),
+            ]
+        else:
+            self.pontos = []
 
     def adicionar_ponto(self, x, y):
         self.x_final = x
         self.y_final = y
+
         self.pontos.append((x, y))
 
-    def _coordenadas(self):
+    def coordenadas(self):
         coordenadas = []
-        for x, y in self.pontos:
-            coordenadas.extend([x, y])
+
+        for ponto in self.pontos:
+            coordenadas.extend(ponto)
         return coordenadas
 
-    def _desenhar(self, canvas, previsualizacao=False):
-        if len(self.pontos) < 2:
-            return None
+class Poligono(MaoLivre):
+    def __init__(self, cor_borda, cor_preenchimento):
+        super().__init__(0, 0, 0, 0, cor_borda, cor_preenchimento, iniciar_lista=False)
 
-        opcoes = {
-            "fill": self.cor_borda,
-            "width": 2,
-            "smooth": True,
-            "splinesteps": 12,
-            "capstyle": "round",
-            "joinstyle": "round",
-        }
+    def adicionar_ponto(self, x, y):
+        self.pontos.append((x, y))
 
-        if previsualizacao:
-            opcoes["dash"] = (4, 2)
-
-        return canvas.create_line(
-            *self._coordenadas(),
-            **opcoes,
-        )
-    
 class Linha(Figura):
-
-        def _desenhar(self, canvas, previsualizacao=False):
-
-            opcoes = {
-                "fill": self.cor_borda,
-                "width": 2
-            }
-
-            if previsualizacao:
-                opcoes["dash"] = (4, 2)
-
-            return canvas.create_line(
-                self.x_inicial,
-                self.y_inicial,
-                self.x_final,
-                self.y_final,
-                **opcoes
-            )
-     
-class Rabisco(MaoLivre):
     pass
 
-
+class Rabisco(MaoLivre):
+    pass
