@@ -13,12 +13,10 @@ class Figura(ABC):
         self.cor_borda = cor_borda
         self.cor_preenchimento = cor_preenchimento
 
-
-    # Método que toda figura deve implementar para se desenhar na tela
     @abstractmethod
     def desenhar(self, canvas, is_temporary=False):
+        """Método que toda figura deve implementar para se desenhar na tela"""
         pass
-
 
 class Retangulo(Figura): # Representa um retangulo
     def desenhar(self, canvas, is_temporary=False):
@@ -27,7 +25,6 @@ class Retangulo(Figura): # Representa um retangulo
             outline=self.cor_borda, fill=self.cor_preenchimento
         )
 
-
 class Oval(Figura): # Representa um oval
     def desenhar(self, canvas, is_temporary=False):
         canvas.create_oval(
@@ -35,26 +32,21 @@ class Oval(Figura): # Representa um oval
             outline=self.cor_borda, fill=self.cor_preenchimento
         )
 
-
 class Circulo(Figura): # Representa um circulo e garante que a largura e altura sejam iguais
     def coordenadas_ajustadas(self):
         lado = min(abs(self.x_final - self.x_inicial), abs(self.y_final - self.y_inicial))
-
 
         if self.x_final < self.x_inicial:
             x_final = self.x_inicial - lado
         else:
             x_final = self.x_inicial + lado
 
-
         if self.y_final < self.y_inicial:
             y_final = self.y_inicial - lado
         else:
             y_final = self.y_inicial + lado
 
-
         return self.x_inicial, self.y_inicial, x_final, y_final
-
 
     def desenhar(self, canvas, is_temporary=False):
         x1, y1, x2, y2 = self.coordenadas_ajustadas()
@@ -63,11 +55,9 @@ class Circulo(Figura): # Representa um circulo e garante que a largura e altura 
             outline=self.cor_borda, fill=self.cor_preenchimento
         )
 
-
-class MaoLivre(Figura): # Representa um desenho feito a mao livre, armazena todos os pontos percorridos pelo mouse
+class MaoLivre(Figura): # Representa um desenho feito a mao livre
     def __init__(self, x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento, iniciar_lista=True):
         super().__init__(x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento)
-
 
         if iniciar_lista:
             self.pontos = [
@@ -77,12 +67,10 @@ class MaoLivre(Figura): # Representa um desenho feito a mao livre, armazena todo
         else:
             self.pontos = []
 
-
     def adicionar_ponto(self, x, y): # Adiciona novo ponto ao desenho
         self.x_final = x
         self.y_final = y
         self.pontos.append((x, y))
-
 
     def coordenadas(self): # Converte a lista de pontos para o formato utilizado pelo Tkinter
         coordenadas = []
@@ -90,11 +78,9 @@ class MaoLivre(Figura): # Representa um desenho feito a mao livre, armazena todo
             coordenadas.extend(ponto)
         return coordenadas
 
-
     def desenhar(self, canvas, is_temporary=False):
         if len(self.pontos) > 1:
             canvas.create_line(self.coordenadas(), fill=self.cor_borda, smooth=True)
-
 
 class Poligono(MaoLivre): # Representa um polígono formado por vários pontos
     def __init__(self, cor_borda, cor_preenchimento):
@@ -104,7 +90,6 @@ class Poligono(MaoLivre): # Representa um polígono formado por vários pontos
     def adicionar_ponto(self, x, y):
         self.pontos.append((x, y))
 
-
     def desenhar(self, canvas, is_temporary=False):
         coords = self.coordenadas()
         if len(self.pontos) >= 3:
@@ -112,14 +97,12 @@ class Poligono(MaoLivre): # Representa um polígono formado por vários pontos
         elif len(self.pontos) == 2:
             canvas.create_line(coords, fill=self.cor_borda)
 
-
 class Linha(Figura): # Representa uma linha
     def desenhar(self, canvas, is_temporary=False):
         canvas.create_line(
             self.x_inicial, self.y_inicial, self.x_final, self.y_final,
             fill=self.cor_borda
         )
-
 
 class Rabisco(MaoLivre): # Representa um rabisco e herda comportamento de Maolivre
     def desenhar(self, canvas, is_temporary=False):
