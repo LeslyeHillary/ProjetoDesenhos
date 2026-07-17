@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 # Importa a classe abstrata ABC, utilizada para criar uma classe base
 
+
 class Figura(ABC):
     def __init__(self, x_inicial, y_inicial, x_final, y_final, cor_borda, cor_preenchimento):
         # Coordenadas inicial e final da figura
@@ -84,6 +85,7 @@ class MaoLivre(Figura): # Representa um desenho feito a mao livre
 class Poligono(MaoLivre): # Representa um polígono formado por vários pontos
     def __init__(self, cor_borda, cor_preenchimento):
         super().__init__(0, 0, 0, 0, cor_borda, cor_preenchimento, iniciar_lista=False)
+
 
     def adicionar_ponto(self, x, y):
         self.pontos.append((x, y))
