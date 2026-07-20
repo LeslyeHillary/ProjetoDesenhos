@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter.colorchooser import askcolor
+from tkinter import filedialog, messagebox  # <-- 1. IMPORTAÇÕES ADICIONADAS AQUI
+
 from controler.controlador import ControladorDesenho
 from models.desenho import Desenho
 
@@ -14,7 +16,7 @@ from controler.ferramentas.ferramenta_rabisco import FerramentaRabisco
 
 # Classe responsável pela interface gráfica do MVC
 class InterfaceGrafica:
-    def __init__(self):
+    def __init__(self):  # <-- CORRIGIDO PARA DOIS UNDERLINES (__init__)
         # Cria a janela principal
         self.janela = tk.Tk()
         self.janela.title("Paint MVC")
@@ -30,7 +32,7 @@ class InterfaceGrafica:
         self.cor_borda = "black"
         self.cor_preenchimento = "white"
 
-    def _configurar_janela(self): # Define tamanho da janela e centraliza 
+    def _configurar_janela(self): 
         largura, altura = 900, 600
         tela_largura = self.janela.winfo_screenwidth()
         tela_altura = self.janela.winfo_screenheight()
@@ -40,7 +42,7 @@ class InterfaceGrafica:
 
         self.janela.geometry(f"{largura}x{altura}+{x}+{y}")
 
-    def criar_widgets(self): # Cria todos os componentes da interface
+    def criar_widgets(self): 
         barra = tk.Frame(self.janela)
         barra.pack(fill="x")
 
@@ -77,6 +79,10 @@ class InterfaceGrafica:
             
         tk.Button(barra, text="Cor da borda", command=self.mudar_borda, **estilo_botao).pack(side="left")
         tk.Button(barra, text="Cor preenchimento", command=self.mudar_preenchimento, **estilo_botao).pack(side="left")
+
+        # <-- 2. BOTÕES DE SALVAR E ABRIR ADICIONADOS AQUI -->
+        tk.Button(barra, text="💾 Salvar", command=self.salvar_arquivo, **estilo_botao).pack(side="right", padx=2)
+        tk.Button(barra, text="📂 Abrir", command=self.abrir_arquivo, **estilo_botao).pack(side="right", padx=2)
 
         self.canvas = tk.Canvas(self.janela, bg="white")
         self.canvas.pack(fill="both", expand=True)
@@ -122,6 +128,34 @@ class InterfaceGrafica:
         cor = askcolor(title="Escolha a cor de preenchimento")[1]
         if cor:
             self.cor_preenchimento = cor
+
+    # <-- 3. FUNÇÕES DE ARQUIVO ADICIONADAS AQUI -->
+    def salvar_arquivo(self):
+        # Abre a janela pedindo onde o usuário quer salvar
+        caminho = filedialog.asksaveasfilename(
+            defaultextension=".pnt",
+            filetypes=[("Arquivos Paint MVC", "*.pnt"), ("Todos os Arquivos", "*.*")],
+            title="Salvar Desenho"
+        )
+        if caminho: # Se o usuário não cancelou a janela
+            sucesso = self.controlador.salvar_desenho(caminho)
+            if sucesso:
+                messagebox.showinfo("Sucesso", "Desenho salvo com sucesso!")
+            else:
+                messagebox.showerror("Erro", "Não foi possível salvar o desenho.")
+
+    def abrir_arquivo(self):
+        # Abre a janela pedindo qual arquivo abrir
+        caminho = filedialog.askopenfilename(
+            filetypes=[("Arquivos Paint MVC", "*.pnt"), ("Todos os Arquivos", "*.*")],
+            title="Abrir Desenho"
+        )
+        if caminho: # Se o usuário selecionou algo
+            sucesso = self.controlador.carregar_desenho(caminho)
+            if sucesso:
+                messagebox.showinfo("Sucesso", "Desenho carregado com sucesso!")
+            else:
+                messagebox.showerror("Erro", "Não foi possível carregar o arquivo ou o formato é inválido.")
 
     def executar(self):
         self.criar_widgets()
