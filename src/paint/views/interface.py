@@ -3,6 +3,15 @@ from tkinter.colorchooser import askcolor
 from controler.controlador import ControladorDesenho
 from models.desenho import Desenho
 
+# Importando todas as classes de ferramentas
+from controler.ferramentas.ferramenta_retangulo import FerramentaRetangulo
+from controler.ferramentas.ferramenta_oval import FerramentaOval
+from controler.ferramentas.ferramenta_circulo import FerramentaCirculo
+from controler.ferramentas.ferramenta_poligono import FerramentaPoligono
+from controler.ferramentas.ferramenta_mao_livre import FerramentaMaoLivre
+from controler.ferramentas.ferramenta_linha import FerramentaLinha
+from controler.ferramentas.ferramenta_rabisco import FerramentaRabisco
+
 # Classe responsável pela interface gráfica do MVC
 class InterfaceGrafica:
     def __init__(self):
@@ -16,7 +25,8 @@ class InterfaceGrafica:
         self.canvas = None
         self.controlador = None
 
-        self.ferramenta = "retangulo"
+        # Ferramenta inicial agora é uma instância da classe, não uma string
+        self.ferramenta = FerramentaRetangulo()
         self.cor_borda = "black"
         self.cor_preenchimento = "white"
 
@@ -25,14 +35,12 @@ class InterfaceGrafica:
         tela_largura = self.janela.winfo_screenwidth()
         tela_altura = self.janela.winfo_screenheight()
 
-        # Resolução da tela
         x = (tela_largura - largura) // 2
         y = (tela_altura - altura) // 2
 
         self.janela.geometry(f"{largura}x{altura}+{x}+{y}")
 
     def criar_widgets(self): # Cria todos os componentes da interface
-        # Barra superior para os botões
         barra = tk.Frame(self.janela)
         barra.pack(fill="x")
 
@@ -47,31 +55,28 @@ class InterfaceGrafica:
             "relief": "raised",
         }
 
-        # Dicionário/Lista mapeando o Nome do Botão para a string da ferramenta
+        # Lista com as instâncias das ferramentas
         ferramentas = [
-            ("Retângulo", "retangulo"),
-            ("Oval", "oval"),
-            ("Círculo", "circulo"),
-            ("Polígono", "poligono"),
-            ("Mão livre", "mao_livre"),
-            ("Linha", "linha"),
-            ("Rabisco", "rabisco"),
+            ("Retângulo", FerramentaRetangulo()),
+            ("Oval", FerramentaOval()),
+            ("Círculo", FerramentaCirculo()),
+            ("Polígono", FerramentaPoligono()),
+            ("Mão livre", FerramentaMaoLivre()),
+            ("Linha", FerramentaLinha()),
+            ("Rabisco", FerramentaRabisco()),
         ]
 
-        # Cria os botões de ferramentas automaticamente com 'lambda'
-        for texto, nome_ferramenta in ferramentas:
+        # Cria os botões passando a instância da ferramenta (o objeto)
+        for texto, ferramenta_instancia in ferramentas:
             tk.Button(
                 barra,
                 text=texto,
-                # O `lambda f=nome_ferramenta:` captura o valor da string e passa direto
-                command=lambda f=nome_ferramenta: self._trocar_ferramenta(f),
+                command=lambda f=ferramenta_instancia: self._trocar_ferramenta(f),
                 **estilo_botao
             ).pack(side="left")
             
-        # Os botões de cor mantêm seus comandos separados pois executam lógicas diferentes
         tk.Button(barra, text="Cor da borda", command=self.mudar_borda, **estilo_botao).pack(side="left")
         tk.Button(barra, text="Cor preenchimento", command=self.mudar_preenchimento, **estilo_botao).pack(side="left")
-
 
         self.canvas = tk.Canvas(self.janela, bg="white")
         self.canvas.pack(fill="both", expand=True)
@@ -84,17 +89,17 @@ class InterfaceGrafica:
             self.atualizar_tela
         )
 
+        # Seleciona a ferramenta inicial
         self.controlador.selecionar_ferramenta(self.ferramenta)
 
-        # Liga os eventos do mouse aos métodos do controlador
+        # Binds do mouse
         self.canvas.bind("<Button-1>", self.controlador.clique)
         self.canvas.bind("<B1-Motion>", self.controlador.arrastar)
         self.canvas.bind("<ButtonRelease-1>", self.controlador.soltar)
-        # Eventos especificos
         self.canvas.bind("<Double-Button-1>", self.controlador.duplo_clique)
         self.canvas.bind("<Motion>", self.controlador.movimentar)
 
-    def atualizar_tela(self): # Apaga e redesenha todas as figuras presentes no modelo
+    def atualizar_tela(self): 
         self.canvas.delete("all")
         
         for figura in self.desenho.figuras:
@@ -103,24 +108,20 @@ class InterfaceGrafica:
         if self.controlador.figura_temporaria:
             self.controlador.figura_temporaria.desenhar(self.canvas, is_temporary=True)
 
-    def _trocar_ferramenta(self, ferramenta): # Atualiza a ferramenta atualmente selecionada
+    def _trocar_ferramenta(self, ferramenta): 
         self.ferramenta = ferramenta
         if self.controlador:
             self.controlador.selecionar_ferramenta(ferramenta)
 
-    def mudar_borda(self): # Permite escolher a cor da borda.
+    def mudar_borda(self):
         cor = askcolor(title="Escolha a cor da borda")[1]
-        if cor is not None:
+        if cor:
             self.cor_borda = cor
-        else:
-            self.cor_borda = "black"
 
-    def mudar_preenchimento(self): # Permite escolher a cor do preenchimento
+    def mudar_preenchimento(self):
         cor = askcolor(title="Escolha a cor de preenchimento")[1]
-        if cor is not None:
+        if cor:
             self.cor_preenchimento = cor
-        else:
-            self.cor_preenchimento = "white"
 
     def executar(self):
         self.criar_widgets()
